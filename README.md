@@ -9,3 +9,8 @@ $ cd build
 $ cmake ..
 $ make
 ```
+
+## data
+
+https://furo.org/software/
+
