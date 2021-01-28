@@ -4,7 +4,10 @@
 
 int main(int argc, char const *argv[]) {
 
-	initImgui();
+	int w = 1280;
+	int h = 720;
+	std::string title = "LittleSLAM";
+	initImgui(w, h, title);
 
 	// Our state
 	bool show_demo_window = true;
@@ -12,14 +15,11 @@ int main(int argc, char const *argv[]) {
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	SensorDataReader sReader;
-	sReader.init("../data/corridor.lsc");
-	Scan2D scan;
-	sReader.loadData(1, scan);
-	std::cout << scan.sid << ", " << scan.lps.size() << std::endl;
-
-	sReader.term();
+	std::string data_file = "../data/corridor.lsc";
+	sReader.init(data_file);
 
 	// Main loop
+	int cnt = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		// Poll and handle events (inputs, window resize, etc.)
@@ -34,42 +34,39 @@ int main(int argc, char const *argv[]) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
+		Scan2D scan;
+		if (!sReader.loadData(cnt, scan)) {
+			break;
+		};
+		cnt++;
 
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+		ImGuiWindowFlags window_flags = 0;
+		window_flags |= ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoResize;
+		window_flags |= ImGuiWindowFlags_NoCollapse;
+		window_flags |= ImGuiWindowFlags_NoBackground;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_FirstUseEver);
+
+		ImGui::Begin("Scan Data", nullptr, window_flags);
+		std::string frame_title = data_file + "  id: " + std::to_string(cnt);
+		ImGui::Text("%s", frame_title.c_str());
+		ImDrawList *draw_list = ImGui::GetWindowDrawList();
+		for (size_t i = 0; i < scan.lps.size(); i++)
 		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
+			draw_list->AddCircle(
+				ImVec2(
+						scan.lps[i].x * 20 + ImGui::GetWindowWidth() / 2.0,
+						scan.lps[i].y * 20 + ImGui::GetWindowHeight() / 2.0
+					),
+				2, 
+				ImColor(
+					ImVec4(0.0f, 0.0f, 0.0f, 1.00f)
+				)
+			);
 		}
-
-		// 3. Show another simple window.
-		if (show_another_window)
-		{
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
-			ImGui::End();
-		}
+		ImGui::End();
 
 		// Rendering
 		ImGui::Render();
@@ -82,6 +79,8 @@ int main(int argc, char const *argv[]) {
 
 		glfwSwapBuffers(window);
 	}
+
+	sReader.term();
 
 	termImgui();
 	return 0;

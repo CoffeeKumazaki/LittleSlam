@@ -28,7 +28,6 @@ bool SensorDataReader::loadData(int id, Scan2D& scan) {
   bool isScan = false;
   while (!f.eof() && !isScan) {
     isScan = loadLaserScan(id, scan);
-    std::cout << "loadData" << std::endl;
   }
 
   return isScan;
