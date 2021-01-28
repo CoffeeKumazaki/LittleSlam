@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <unistd.h>
+#include <string>
 
 #include <array>
 #include <vector>
@@ -14,3 +15,9 @@
 #include <algorithm>
 #include <math.h>
 #include <random>
+
+#include <math.h>
+#define RAD2DEG(a) ((a)/M_PI * 180.0)
+#define DEG2RAD(a) ((a)/180.0 * M_PI)
+
+#include "struct.hpp"

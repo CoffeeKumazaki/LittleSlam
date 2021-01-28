@@ -35,6 +35,9 @@ add_library(imgui STATIC
 
 ## Define the executable
 set(SRCS 
+  src/struct.cpp
+  src/SensorDataReader.cpp
+  src/SlamLauncher.cpp
   src/main.cpp
 )
 add_executable(${PROJECT_NAME} ${SRCS})

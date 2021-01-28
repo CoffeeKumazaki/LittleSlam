@@ -1,6 +1,6 @@
 #include <stdafx.hpp>
 #include "imgui_helper.hpp"
-
+#include "SlamLauncher.hpp"
 
 int main(int argc, char const *argv[]) {
 
@@ -10,6 +10,14 @@ int main(int argc, char const *argv[]) {
 	bool show_demo_window = true;
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	SensorDataReader sReader;
+	sReader.init("../data/corridor.lsc");
+	Scan2D scan;
+	sReader.loadData(1, scan);
+	std::cout << scan.sid << ", " << scan.lps.size() << std::endl;
+
+	sReader.term();
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
