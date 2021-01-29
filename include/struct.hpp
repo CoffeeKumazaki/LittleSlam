@@ -1,17 +1,5 @@
 #pragma once
 
-struct Pose2D {
-  double x     = 0.0;
-  double y     = 0.0;
-  double angle = 0.0;
-  double Rmat[2][2] = {{0, 0}, {0, 0}};
-
-  void calcRmat() {
-    double a = DEG2RAD(angle);
-    Rmat[0][0] = Rmat[1][1] = cos(a);
-    Rmat[1][0] = sin(a);
-    Rmat[0][1] = -Rmat[1][0];
-  }};
 
 enum ptype
 {
@@ -38,7 +26,25 @@ struct LPoint2D {
     y = dist*std::sin(deg);    
   }
 
+};
 
+struct Pose2D {
+  double x     = 0.0;
+  double y     = 0.0;
+  double angle = 0.0;
+  double Rmat[2][2] = {{0, 0}, {0, 0}};
+
+  void calcRmat() {
+    double a = DEG2RAD(angle)+M_PI;
+    Rmat[0][0] = Rmat[1][1] = cos(a);
+    Rmat[1][0] = sin(a);
+    Rmat[0][1] = -Rmat[1][0];
+  }
+
+  void getGlobalPoint(const LPoint2D& in, LPoint2D& out) const {
+    out.x = Rmat[0][0]*in.x + Rmat[0][1]*in.y + x;
+    out.y = Rmat[1][0]*in.x + Rmat[1][1]*in.y + y;
+  }
 };
 
 struct Scan2D {
