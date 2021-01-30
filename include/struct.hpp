@@ -45,6 +45,37 @@ struct Pose2D {
     out.x = Rmat[0][0]*in.x + Rmat[0][1]*in.y + x;
     out.y = Rmat[1][0]*in.x + Rmat[1][1]*in.y + y;
   }
+
+  static void calcRelativePose(const Pose2D& src, const Pose2D& trg, Pose2D& res) {
+    
+    double dx = trg.x - src.x;
+    double dy = trg.y - src.y;
+    res.x = trg.Rmat[0][0] * dx + trg.Rmat[0][1] * dy;
+    res.y = trg.Rmat[1][0] * dx + trg.Rmat[1][1] * dy;
+
+    res.angle = trg.angle - src.angle;
+    if (res.angle < -180)
+      res.angle += 360;
+    else if (res.angle >= 180)
+      res.angle -= 360;
+
+    res.calcRmat();
+  }
+
+  static void calcPredictionPose(const Pose2D& base, const Pose2D& motion, Pose2D& res) {
+
+    res.x = base.Rmat[0][0] * motion.x + base.Rmat[0][1] * motion.y + base.x;
+    res.y = base.Rmat[1][0] * motion.x + base.Rmat[1][1] * motion.y + base.y;
+
+    res.angle = base.angle + motion.angle;
+    if (res.angle < -180)
+      res.angle += 360;
+    else if (res.angle >= 180)
+      res.angle -= 360;
+
+    res.calcRmat();
+
+  }
 };
 
 struct Scan2D {
