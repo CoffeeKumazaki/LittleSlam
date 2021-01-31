@@ -1,5 +1,8 @@
 #pragma once
 
+class RefScanMaker;
+class PoseOptimizer;
+
 class ScanMatcher {
 
 public:
@@ -12,6 +15,9 @@ public:
 private:
   Scan2D prevScan;
   Pose2D curPose;
+
+  std::shared_ptr<RefScanMaker> prsm;
+  std::shared_ptr<PoseEstimator> ppe;
 
   int cnt;
   double score_max;

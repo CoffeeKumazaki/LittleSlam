@@ -36,6 +36,9 @@ add_library(imgui STATIC
 ## Define the executable
 set(SRCS 
   src/struct.cpp
+  src/DataAssociator.cpp
+  src/PoseEstimator.cpp
+  src/RefScanMaker.cpp
   src/PointCloudMap.cpp
   src/ScanMatcher.cpp
   src/SensorDataReader.cpp

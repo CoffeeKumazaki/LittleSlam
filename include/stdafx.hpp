@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <string>
+#include <memory>
 
 #include <array>
 #include <vector>

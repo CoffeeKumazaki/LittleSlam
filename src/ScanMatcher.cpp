@@ -1,5 +1,7 @@
 #include <stdafx.hpp>
 #include "PointCloudMap.hpp"
+#include "RefScanMaker.hpp"
+#include "PoseEstimator.hpp"
 #include "ScanMatcher.hpp"
 
 ScanMatcher::ScanMatcher(int _cnt /*= -1*/, double _score_max /*= 1.0*/, int _num_min /*= 50*/) 
@@ -7,6 +9,8 @@ ScanMatcher::ScanMatcher(int _cnt /*= -1*/, double _score_max /*= 1.0*/, int _nu
   , score_max(_score_max)
   , num_min(_num_min)
 {
+  prsm = std::make_shared<RefScanMaker>();
+  ppe = std::make_shared<PoseEstimator>();
 }
 
 ScanMatcher::~ScanMatcher() {
@@ -28,7 +32,20 @@ bool ScanMatcher::matchScan(const Scan2D& srcScan) {
   Pose2D predPose;
   Pose2D::calcPredictionPose(lastPose, motion, predPose);
 
-  
+  prsm->makeRefScan();
+  Scan2D refScan;
+  prsm->getRefScan(refScan);
+
+  Pose2D estPose;
+  double score = ppe->estimatePose(lastPose, estPose);
+
+  ret = score < score_max;
+
+  if (!ret)
+    estPose = predPose;
+
+  growMap(srcScan, estPose);
+  prevScan = srcScan;
 
   cnt++;
 
@@ -58,6 +75,8 @@ void ScanMatcher::growMap(const Scan2D& srcScan, const Pose2D& pose) {
     globalScan.emplace_back(maplp);
   }
 
-  GetPCM().addPose(pose);
-  GetPCM().addPoints(globalScan);
+  PointCloudMap &pcm = GetPCM();
+  pcm.addPose(pose);
+  pcm.addPoints(globalScan);
+  pcm.setLastScan(srcScan);
 }
