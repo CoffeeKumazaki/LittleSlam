@@ -3,6 +3,68 @@
 #include "SlamLauncher.hpp"
 #include "ScanMatcher.hpp"
 #include "PointCloudMap.hpp"
+#include "RefScanMaker.hpp"
+
+void drawRefScan(ScanMatcher& sm, Scan2D& scan) {
+
+	ImDrawList *draw_list = ImGui::GetWindowDrawList();
+	sm.growMap(scan, scan.pose);
+
+	RefScanMaker rsm;
+	rsm.makeRefScan();
+	Scan2D ref;
+	rsm.getRefScan(ref);
+
+	ImGui::Text("Ref Scan Size: %lu", ref.lps.size());
+	for (size_t i = 0; i < ref.lps.size(); i++)
+	{
+		draw_list->AddCircle(
+			ImVec2(
+					ref.lps[i].x * 10 + ImGui::GetWindowWidth() / 2.0,
+					ref.lps[i].y * 10 + ImGui::GetWindowHeight() / 2.0
+				),
+			2, 
+			ImColor(
+				ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+			)
+		);
+	}
+}
+
+void drawScan(std::vector<LPoint2D>& glps, Scan2D& scan) {
+
+		ImDrawList *draw_list = ImGui::GetWindowDrawList();
+		int step = 100;
+		for (size_t i = 0; i < glps.size(); i+=step)
+		{
+			draw_list->AddCircle(
+				ImVec2(
+						glps[i].x * 10 + ImGui::GetWindowWidth() / 2.0,
+						glps[i].y * 10 + ImGui::GetWindowHeight() / 2.0
+					),
+				2, 
+				ImColor(
+					ImVec4(0.3f, 0.3f, 0.3f, 1.00f)
+				)
+			);
+		}
+
+		for (size_t i = 0; i < scan.lps.size(); i++) {
+			LPoint2D glp;
+			scan.pose.getGlobalPoint(scan.lps[i], glp);
+			glps.emplace_back(glp);
+			draw_list->AddCircle(
+				ImVec2(
+						glp.x * 10 + ImGui::GetWindowWidth() / 2.0,
+						glp.y * 10 + ImGui::GetWindowHeight() / 2.0
+					),
+				2, 
+				ImColor(
+					ImVec4(0.0f, 0.0f, 0.0f, 1.00f)
+				)
+			);
+		}
+}
 
 int main(int argc, char const *argv[]) {
 
@@ -62,40 +124,13 @@ int main(int argc, char const *argv[]) {
 		ImGui::Begin("Scan Data", nullptr, window_flags);
 		std::string frame_title = data_file + "  id: " + std::to_string(cnt);
 		ImGui::Text("%s", frame_title.c_str());
+		ImGui::Text("pose (%lf, %lf)", scan.pose.x, scan.pose.y);
+		ImGui::Text("est pose (%lf, %lf)", GetPCM().getLastPose().x, GetPCM().getLastPose().y);
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-
+//		drawScan(glps, scan);
+		drawRefScan(sm, scan);
 		int step = 100;
-		for (size_t i = 0; i < glps.size(); i+=step)
-		{
-			draw_list->AddCircle(
-				ImVec2(
-						glps[i].x * 10 + ImGui::GetWindowWidth() / 2.0,
-						glps[i].y * 10 + ImGui::GetWindowHeight() / 2.0
-					),
-				2, 
-				ImColor(
-					ImVec4(0.3f, 0.3f, 0.3f, 1.00f)
-				)
-			);
-		}
-
-		for (size_t i = 0; i < scan.lps.size(); i++) {
-			LPoint2D glp;
-			scan.pose.getGlobalPoint(scan.lps[i], glp);
-			glps.emplace_back(glp);
-			draw_list->AddCircle(
-				ImVec2(
-						glp.x * 10 + ImGui::GetWindowWidth() / 2.0,
-						glp.y * 10 + ImGui::GetWindowHeight() / 2.0
-					),
-				2, 
-				ImColor(
-					ImVec4(0.0f, 0.0f, 0.0f, 1.00f)
-				)
-			);
-		}
-
 		const auto &matchedMap = GetPCM().globalMap;
 		for (size_t i = 0; i < GetPCM().globalMap.size(); i+=step) {
 			draw_list->AddCircle(
@@ -105,7 +140,7 @@ int main(int argc, char const *argv[]) {
 					),
 				2, 
 				ImColor(
-					ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+					ImVec4(0.0f, 0.0f, 1.0f, 1.00f)
 				)
 			);
 		}

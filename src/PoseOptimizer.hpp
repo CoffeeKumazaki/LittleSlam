@@ -3,7 +3,7 @@
 class PoseOptimizer {
 
 public:
-  PoseOptimizer(){};
+  PoseOptimizer(): evthre(0.001), dd(0.00001), da(0.00001){};
   ~PoseOptimizer(){};
 
   void setPoints(const std::vector<LPoint2D>& _curLps, const std::vector<LPoint2D>& _refLps) {
@@ -69,11 +69,12 @@ public:
 
       ev = evaluate(x, y, a);
 
-      if (ev < evMin) {
+      // std::cout << abs(prevEv-ev) << ", " <<  evthre << std::endl;
+      if (ev < evMin)
+      {
         evMin = ev;
         xmin = x;  ymin = y;  amin = a;
       }
-
     }
 
     estPose.x = xmin;

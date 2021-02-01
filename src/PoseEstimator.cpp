@@ -16,7 +16,7 @@ PoseEstimator::~PoseEstimator() {
 
 double PoseEstimator::estimatePose(const Pose2D& initPose, Pose2D& estPose) {
 
-  double evMin = __DBL_MAX__;
+  double evMin = 3*10e7;
   double evThre = 0.0001;
 
   double ev = 0;
@@ -27,6 +27,8 @@ double PoseEstimator::estimatePose(const Pose2D& initPose, Pose2D& estPose) {
 
   for (size_t i = 0; abs(prevEv - ev) > evThre; i++) {
 
+    if (i > 0)
+      prevEv = ev;
     double ratio = pda->findCorrespondence(curScan, pose);
     Pose2D newPose;
 
