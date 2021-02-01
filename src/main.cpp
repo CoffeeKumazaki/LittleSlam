@@ -4,6 +4,66 @@
 #include "ScanMatcher.hpp"
 #include "PointCloudMap.hpp"
 #include "RefScanMaker.hpp"
+#include "DataAssociator.hpp"
+
+void drawCorrespondData(ScanMatcher& sm, Scan2D& scan) {
+
+	RefScanMaker rsm;
+	rsm.makeRefScan();
+	Scan2D ref;
+	rsm.getRefScan(ref);
+
+	DataAssociator da;
+	da.setRefBase(ref.lps);
+	Pose2D pose = GetPCM().getLastPose();
+	da.findCorrespondence(scan, pose);
+
+	ImDrawList *draw_list = ImGui::GetWindowDrawList();
+	std::cout << da.curLps.size() << std::endl;
+	double scale = 1.0;
+	double max_x = __DBL_MIN__;
+	double min_x = __DBL_MAX__;
+	double max_y = __DBL_MIN__;
+	double min_y = __DBL_MAX__;
+	double ave_x = 0;
+	double ave_y = 0;
+	for (size_t i = 0; i < da.curLps.size(); i++)
+	{
+		max_x = std::max(da.curLps[i].x, max_x);
+		min_x = std::min(da.curLps[i].x, min_x);
+		max_y = std::max(da.curLps[i].y, max_y);
+		min_y = std::min(da.curLps[i].y, min_y);
+		ave_x += da.curLps[i].x;
+		ave_y += da.curLps[i].y;
+	}
+	scale = 1/std::max((max_x-min_x)/1300, (max_y-min_y)/800);
+	ave_x /= da.curLps.size();
+	ave_y /= da.curLps.size();
+	std::cout << scale << std::endl;
+
+	for (size_t i = 0; i < da.curLps.size(); i++)	{
+		draw_list->AddCircle(
+			ImVec2(
+					(da.curLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0,
+					(da.curLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0
+				),
+			3, 
+			ImColor(
+				ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+			)
+		);
+		draw_list->AddCircle(
+			ImVec2(
+					(da.refLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0,
+					(da.refLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0
+			),
+			2,
+			ImColor(
+				ImVec4(0.0f, 1.0f, 0.0f, 1.00f))
+		);
+	}
+	sm.growMap(scan, scan.pose);
+}
 
 void drawRefScan(ScanMatcher& sm, Scan2D& scan) {
 
@@ -105,7 +165,7 @@ int main(int argc, char const *argv[]) {
 			break;
 		};
     clock_t start = clock();
-		sm.matchScan(scan);
+		// sm.matchScan(scan);
 		cnt++;
     clock_t end = clock();
 
@@ -129,7 +189,9 @@ int main(int argc, char const *argv[]) {
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
 //		drawScan(glps, scan);
-		drawRefScan(sm, scan);
+//		drawRefScan(sm, scan);
+		drawCorrespondData( sm, scan);
+		/*
 		int step = 100;
 		const auto &matchedMap = GetPCM().globalMap;
 		for (size_t i = 0; i < GetPCM().globalMap.size(); i+=step) {
@@ -144,6 +206,7 @@ int main(int argc, char const *argv[]) {
 				)
 			);
 		}
+		*/
 
 		ImGui::End();
 
