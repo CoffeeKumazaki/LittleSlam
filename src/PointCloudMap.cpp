@@ -16,10 +16,13 @@ void PointCloudMap::addPose(Pose2D pose) {
 void PointCloudMap::addPoints(const std::vector<LPoint2D>& points, int step /*= 5*/) {
 
   for (size_t i = 0; i < points.size(); i+=step) {
-  globalMap.emplace_back(points[i]); 
+    globalMap.emplace_back(points[i]); 
   }
 }
 
 Pose2D PointCloudMap::getLastPose() {
+  if (poses.empty()) {
+    return Pose2D();
+  }
   return poses.back();
 }

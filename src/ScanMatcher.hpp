@@ -1,7 +1,7 @@
 #pragma once
 
 class RefScanMaker;
-class PoseOptimizer;
+class PoseEstimator;
 
 class ScanMatcher {
 

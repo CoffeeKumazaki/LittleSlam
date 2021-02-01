@@ -1,6 +1,8 @@
 #include <stdafx.hpp>
 #include "imgui_helper.hpp"
 #include "SlamLauncher.hpp"
+#include "ScanMatcher.hpp"
+#include "PointCloudMap.hpp"
 
 int main(int argc, char const *argv[]) {
 
@@ -17,6 +19,7 @@ int main(int argc, char const *argv[]) {
 	SensorDataReader sReader;
 	std::string data_file = "../data/corridor.lsc";
 	sReader.init(data_file);
+	ScanMatcher sm;
 
 	// Main loop
 	int cnt = 0;
@@ -39,7 +42,13 @@ int main(int argc, char const *argv[]) {
 		if (!sReader.loadData(cnt, scan)) {
 			break;
 		};
+    clock_t start = clock();
+		sm.matchScan(scan);
 		cnt++;
+    clock_t end = clock();
+
+    const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
+    printf("matchScan time %lf[ms]\n", time);
 
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_NoMove;
@@ -66,7 +75,7 @@ int main(int argc, char const *argv[]) {
 					),
 				2, 
 				ImColor(
-					ImVec4(0.0f, 0.0f, 0.0f, 1.00f)
+					ImVec4(0.3f, 0.3f, 0.3f, 1.00f)
 				)
 			);
 		}
@@ -82,12 +91,24 @@ int main(int argc, char const *argv[]) {
 					),
 				2, 
 				ImColor(
+					ImVec4(0.0f, 0.0f, 0.0f, 1.00f)
+				)
+			);
+		}
+
+		const auto &matchedMap = GetPCM().globalMap;
+		for (size_t i = 0; i < GetPCM().globalMap.size(); i+=step) {
+			draw_list->AddCircle(
+				ImVec2(
+						matchedMap[i].x * 10 + ImGui::GetWindowWidth() / 2.0,
+						matchedMap[i].y * 10 + ImGui::GetWindowHeight() / 2.0
+					),
+				2, 
+				ImColor(
 					ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 				)
 			);
 		}
-		std::cout << glps.size() << std::endl;
-
 
 		ImGui::End();
 

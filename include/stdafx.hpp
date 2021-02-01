@@ -16,8 +16,7 @@
 #include <algorithm>
 #include <math.h>
 #include <random>
-
-#include <math.h>
+#include <time.h>
 #define RAD2DEG(a) ((a)/M_PI * 180.0)
 #define DEG2RAD(a) ((a)/180.0 * M_PI)
 

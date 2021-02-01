@@ -30,6 +30,7 @@ double PoseEstimator::estimatePose(const Pose2D& initPose, Pose2D& estPose) {
     double ratio = pda->findCorrespondence(curScan, pose);
     Pose2D newPose;
 
+    ppo->setPoints(pda->curLps, pda->refLps);
     ev = ppo->OptimizePose(pose, newPose);
     pose = newPose;
 
@@ -43,4 +44,12 @@ double PoseEstimator::estimatePose(const Pose2D& initPose, Pose2D& estPose) {
   estPose = poseMin;
 
   return evMin;
+}
+
+void PoseEstimator::setCurScan(const Scan2D &srcScan) { 
+  curScan = srcScan;
+}
+
+void PoseEstimator::setRefScan(const Scan2D &refScan) { 
+  pda->setRefBase(refScan.lps);
 }

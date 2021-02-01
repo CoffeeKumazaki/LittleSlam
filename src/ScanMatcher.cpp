@@ -18,7 +18,9 @@ ScanMatcher::~ScanMatcher() {
 
 bool ScanMatcher::matchScan(const Scan2D& srcScan) {
 
-  if (cnt == 0) {
+  cnt++;
+  if (cnt == 0)
+  {
     growMap(srcScan, curPose);
     prevScan = srcScan;
     return true;
@@ -37,6 +39,8 @@ bool ScanMatcher::matchScan(const Scan2D& srcScan) {
   prsm->getRefScan(refScan);
 
   Pose2D estPose;
+  ppe->setRefScan(refScan);
+  ppe->setCurScan(srcScan);
   double score = ppe->estimatePose(lastPose, estPose);
 
   ret = score < score_max;
@@ -46,8 +50,6 @@ bool ScanMatcher::matchScan(const Scan2D& srcScan) {
 
   growMap(srcScan, estPose);
   prevScan = srcScan;
-
-  cnt++;
 
   return ret;
 }

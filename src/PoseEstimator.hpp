@@ -10,6 +10,8 @@ public:
   ~PoseEstimator();
 
   double estimatePose(const Pose2D& initPose, Pose2D& estPose);
+  void setCurScan(const Scan2D &srcScan);
+  void setRefScan(const Scan2D &refScan);
 
 private:
   Scan2D curScan;

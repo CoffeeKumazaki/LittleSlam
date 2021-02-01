@@ -13,7 +13,7 @@ public:
 
   double evaluate(double x, double y, double angle) {
 
-    double evLimit = 1.0;
+    double evLimit = 0.2;
     double a = DEG2RAD(angle);
     double error = 0;
 
@@ -79,6 +79,7 @@ public:
     estPose.x = xmin;
     estPose.y = ymin;
     estPose.angle = amin;
+    // estPose.calcRmat();
 
     return evMin;
   }

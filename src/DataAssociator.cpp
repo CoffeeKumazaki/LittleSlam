@@ -30,7 +30,8 @@ double DataAssociator::findCorrespondence(const Scan2D& curScan, const Pose2D& p
       double dx = glp.x - rlp.x;
       double dy = glp.y - rlp.y;
       double d = dx * dx + dy * dy;
-      if (d<=dthre*dthre && d < dmin) {
+      if (d <= dthre * dthre && d < dmin)
+      {
         dmin = d;
         minP = rlp;
         find = true;
@@ -44,6 +45,5 @@ double DataAssociator::findCorrespondence(const Scan2D& curScan, const Pose2D& p
   }
 
   double ratio = 1.0 * curLps.size() / curScan.lps.size();
-
   return ratio;
 }
