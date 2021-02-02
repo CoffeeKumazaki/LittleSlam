@@ -59,10 +59,14 @@ void drawCorrespondData(ScanMatcher& sm, Scan2D& scan) {
 			),
 			2,
 			ImColor(
-				ImVec4(0.0f, 1.0f, 0.0f, 1.00f))
+				ImVec4(0.0f, 0.0f, 1.0f, 1.00f))
+		);
+		draw_list->AddLine(
+			ImVec2((da.curLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0, (da.curLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0),
+			ImVec2((da.refLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0, (da.refLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0),
+			ImColor(ImVec4(1.0f, 1.0f, 1.0f, 1.00f))
 		);
 	}
-	sm.growMap(scan, scan.pose);
 }
 
 void drawRefScan(ScanMatcher& sm, Scan2D& scan) {
@@ -146,6 +150,10 @@ int main(int argc, char const *argv[]) {
 	// Main loop
 	int cnt = 0;
 	std::vector<LPoint2D> glps;
+	Scan2D scan;
+	sReader.loadData(cnt, scan);
+	cnt++;
+	bool next = false;
 	while (!glfwWindowShouldClose(window))
 	{
 		// Poll and handle events (inputs, window resize, etc.)
@@ -160,13 +168,20 @@ int main(int argc, char const *argv[]) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		Scan2D scan;
-		if (!sReader.loadData(cnt, scan)) {
+		bool dataLoad = true;
+		if (next) {
+			sm.growMap(scan, scan.pose);
+			dataLoad = sReader.loadData(cnt, scan);
+		}
+		if (dataLoad)	{
+			if (next) cnt++;
+		}
+		else{
 			break;
 		};
-    clock_t start = clock();
+		next = false;
+		clock_t start = clock();
 		// sm.matchScan(scan);
-		cnt++;
     clock_t end = clock();
 
     const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
@@ -186,6 +201,11 @@ int main(int argc, char const *argv[]) {
 		ImGui::Text("%s", frame_title.c_str());
 		ImGui::Text("pose (%lf, %lf)", scan.pose.x, scan.pose.y);
 		ImGui::Text("est pose (%lf, %lf)", GetPCM().getLastPose().x, GetPCM().getLastPose().y);
+
+		if (ImGui::Button("next")) {
+			next = true;
+		}
+
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
 //		drawScan(glps, scan);
