@@ -28,14 +28,9 @@ add_library(imgui STATIC
 )
 
 ## Define libraries
-# target_include_directories(${PROJECT_NAME}_lib include)
-# add_library(${PROJECT_NAME}_lib
-# 
-#)
-
-## Define the executable
-set(SRCS 
+add_library(${PROJECT_NAME}_lib
   src/struct.cpp
+  src/ScanPointResampler.cpp
   src/DataAssociator.cpp
   src/PoseEstimator.cpp
   src/RefScanMaker.cpp
@@ -43,6 +38,13 @@ set(SRCS
   src/ScanMatcher.cpp
   src/SensorDataReader.cpp
   src/SlamLauncher.cpp
+)
+target_include_directories(${PROJECT_NAME}_lib PUBLIC
+ include
+)
+
+## Define the executable
+set(SRCS 
   src/main.cpp
 )
 add_executable(${PROJECT_NAME} ${SRCS})
@@ -54,4 +56,22 @@ target_link_libraries(${PROJECT_NAME}
   glew
   glfw 
   ${OPENGL_gl_LIBRARY} 
+  ${PROJECT_NAME}_lib
+)
+
+
+## Module testing
+add_executable(resampling_test
+  test/resampling_test.cpp
+)
+target_include_directories(resampling_test PUBLIC
+  include
+  src
+)
+target_link_libraries(resampling_test
+  imgui
+  glew
+  glfw 
+  ${OPENGL_gl_LIBRARY} 
+  ${PROJECT_NAME}_lib
 )

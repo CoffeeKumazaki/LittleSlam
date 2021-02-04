@@ -20,6 +20,14 @@ struct LPoint2D {
   double acc_dist = 0.0;
   ptype type = UNKNOWN;
 
+  LPoint2D() {
+    LPoint2D(01, 0, 0);
+  }
+  LPoint2D(int _sid, double _x, double _y) {
+    sid = _sid; x = _x;
+    y = _y;
+  }
+
   void calcPos(double dist, double angle) {
     double deg = DEG2RAD(angle);
     x = dist*std::cos(deg);
