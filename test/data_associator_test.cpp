@@ -99,7 +99,6 @@ int main(int argc, char const *argv[]) {
     avey /= da.curLps.size();
 
     double scale = 80;
-    std::cout << da.curLps.size() << std::endl;
     for (size_t i = 0; i < da.curLps.size(); i++)
     {
       double cx = (da.curLps[i].x - pose.x) * scale + ImGui::GetWindowWidth() / 2.0;
