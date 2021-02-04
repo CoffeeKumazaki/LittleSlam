@@ -75,3 +75,18 @@ target_link_libraries(resampling_test
   ${OPENGL_gl_LIBRARY} 
   ${PROJECT_NAME}_lib
 )
+
+add_executable(data_associator_test
+  test/data_associator_test.cpp
+)
+target_include_directories(data_associator_test PUBLIC
+  include
+  src
+)
+target_link_libraries(data_associator_test
+  imgui
+  glew
+  glfw 
+  ${OPENGL_gl_LIBRARY} 
+  ${PROJECT_NAME}_lib
+)
