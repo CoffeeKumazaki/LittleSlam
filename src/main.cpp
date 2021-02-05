@@ -4,70 +4,9 @@
 #include "ScanMatcher.hpp"
 #include "PointCloudMap.hpp"
 #include "RefScanMaker.hpp"
+#include "ScanPointResampler.hpp"
 #include "DataAssociator.hpp"
 
-void drawCorrespondData(ScanMatcher& sm, Scan2D& scan) {
-
-	RefScanMaker rsm;
-	rsm.makeRefScan();
-	Scan2D ref;
-	rsm.getRefScan(ref);
-
-	DataAssociator da;
-	da.setRefBase(ref.lps);
-	Pose2D pose = GetPCM().getLastPose();
-	da.findCorrespondence(scan, pose);
-
-	ImDrawList *draw_list = ImGui::GetWindowDrawList();
-	std::cout << da.curLps.size() << std::endl;
-	double scale = 1.0;
-	double max_x = __DBL_MIN__;
-	double min_x = __DBL_MAX__;
-	double max_y = __DBL_MIN__;
-	double min_y = __DBL_MAX__;
-	double ave_x = 0;
-	double ave_y = 0;
-	for (size_t i = 0; i < da.curLps.size(); i++)
-	{
-		max_x = std::max(da.curLps[i].x, max_x);
-		min_x = std::min(da.curLps[i].x, min_x);
-		max_y = std::max(da.curLps[i].y, max_y);
-		min_y = std::min(da.curLps[i].y, min_y);
-		ave_x += da.curLps[i].x;
-		ave_y += da.curLps[i].y;
-	}
-	scale = 1/std::max((max_x-min_x)/1300, (max_y-min_y)/800);
-	ave_x /= da.curLps.size();
-	ave_y /= da.curLps.size();
-	std::cout << scale << std::endl;
-
-	for (size_t i = 0; i < da.curLps.size(); i++)	{
-		draw_list->AddCircle(
-			ImVec2(
-					(da.curLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0,
-					(da.curLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0
-				),
-			3, 
-			ImColor(
-				ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
-			)
-		);
-		draw_list->AddCircle(
-			ImVec2(
-					(da.refLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0,
-					(da.refLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0
-			),
-			2,
-			ImColor(
-				ImVec4(0.0f, 0.0f, 1.0f, 1.00f))
-		);
-		draw_list->AddLine(
-			ImVec2((da.curLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0, (da.curLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0),
-			ImVec2((da.refLps[i].x - ave_x) * scale + ImGui::GetWindowWidth() / 2.0, (da.refLps[i].y - ave_y) * scale + ImGui::GetWindowHeight() / 2.0),
-			ImColor(ImVec4(1.0f, 1.0f, 1.0f, 1.00f))
-		);
-	}
-}
 
 void drawRefScan(ScanMatcher& sm, Scan2D& scan) {
 
@@ -146,21 +85,22 @@ int main(int argc, char const *argv[]) {
 	std::string data_file = "../data/corridor.lsc";
 	sReader.init(data_file);
 	ScanMatcher sm;
+	ScanPointResampler spr;
 
 	// Main loop
 	int cnt = 0;
 	std::vector<LPoint2D> glps;
+	std::vector<Pose2D> estPoses;
+	std::vector<Pose2D> odPoses;
 	Scan2D scan;
 	sReader.loadData(cnt, scan);
+	estPoses.emplace_back(scan.pose);
+	odPoses.emplace_back(scan.pose);
 	cnt++;
-	bool next = false;
+	bool read_contenious = false;
+	bool next = read_contenious;
 	while (!glfwWindowShouldClose(window))
 	{
-		// Poll and handle events (inputs, window resize, etc.)
-		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfwPollEvents();
 
 		// Start the Dear ImGui frame
@@ -170,8 +110,15 @@ int main(int argc, char const *argv[]) {
 
 		bool dataLoad = true;
 		if (next) {
-			sm.growMap(scan, scan.pose);
 			dataLoad = sReader.loadData(cnt, scan);
+			odPoses.emplace_back(scan.pose);
+			clock_t start = clock();
+			sm.matchScan(scan);
+			sm.growMap(scan, scan.pose);
+			clock_t end = clock();
+			const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
+			printf("matchScan time %lf[ms]\n", time);
+			estPoses.emplace_back(GetPCM().getLastPose());
 		}
 		if (dataLoad)	{
 			if (next) cnt++;
@@ -179,13 +126,7 @@ int main(int argc, char const *argv[]) {
 		else{
 			break;
 		};
-		next = false;
-		clock_t start = clock();
-		// sm.matchScan(scan);
-    clock_t end = clock();
-
-    const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
-    printf("matchScan time %lf[ms]\n", time);
+		next = read_contenious;
 
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_NoMove;
@@ -199,20 +140,22 @@ int main(int argc, char const *argv[]) {
 		ImGui::Begin("Scan Data", nullptr, window_flags);
 		std::string frame_title = data_file + "  id: " + std::to_string(cnt);
 		ImGui::Text("%s", frame_title.c_str());
-		ImGui::Text("pose (%lf, %lf)", scan.pose.x, scan.pose.y);
-		ImGui::Text("est pose (%lf, %lf)", GetPCM().getLastPose().x, GetPCM().getLastPose().y);
+		ImGui::Text("odometry (%lf, %lf)", scan.pose.x, scan.pose.y);
+		ImGui::Text("slam     (%lf, %lf)", GetPCM().getLastPose().x, GetPCM().getLastPose().y);
+		ImGui::Text("diff     (%lf, %lf)", GetPCM().getLastPose().x - scan.pose.x, GetPCM().getLastPose().y - scan.pose.y);
 
+
+    if (ImGui::Button(read_contenious ? "Pose" : "Continuous")) {
+      read_contenious = !read_contenious;
+    }
+		ImGui::SameLine();
 		if (ImGui::Button("next")) {
 			next = true;
 		}
 
 		ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-//		drawScan(glps, scan);
-//		drawRefScan(sm, scan);
-		drawCorrespondData( sm, scan);
-		/*
-		int step = 100;
+		int step = GetPCM().globalMap.size() > 10000 ? 100 : 1;
 		const auto &matchedMap = GetPCM().globalMap;
 		for (size_t i = 0; i < GetPCM().globalMap.size(); i+=step) {
 			draw_list->AddCircle(
@@ -226,7 +169,25 @@ int main(int argc, char const *argv[]) {
 				)
 			);
 		}
-		*/
+
+		for (size_t i = 1; i < odPoses.size(); i++)
+		{
+			draw_list->AddLine(
+				ImVec2(
+					odPoses[i].x*10 + ImGui::GetWindowWidth() / 2.0, odPoses[i].y*10+ ImGui::GetWindowHeight() / 2.0), 
+				ImVec2(
+					odPoses[i-1].x*10 + ImGui::GetWindowWidth() / 2.0, odPoses[i-1].y*10+ ImGui::GetWindowHeight() / 2.0), 
+					ImColor(ImVec4(1.0, 0.0, 0.0, 1.0)), 1.5);
+		}
+		for (size_t i = 1; i < estPoses.size(); i++)
+		{
+			draw_list->AddLine(
+				ImVec2(
+					estPoses[i].x*10 + ImGui::GetWindowWidth() / 2.0, estPoses[i].y*10+ ImGui::GetWindowHeight() / 2.0), 
+				ImVec2(
+					estPoses[i-1].x*10 + ImGui::GetWindowWidth() / 2.0, estPoses[i-1].y*10+ ImGui::GetWindowHeight() / 2.0), 
+					ImColor(ImVec4(1.0, 1.0, 1.0, 1.0)), 1.0);
+		}
 
 		ImGui::End();
 
