@@ -35,6 +35,7 @@ add_library(${PROJECT_NAME}_lib
   src/PoseEstimator.cpp
   src/RefScanMaker.cpp
   src/PointCloudMap.cpp
+  src/PointCloudMapGT.cpp
   src/ScanMatcher.cpp
   src/SensorDataReader.cpp
   src/ScanPointAnalyser.cpp
@@ -100,6 +101,21 @@ target_include_directories(scan_point_analyser_test PUBLIC
   src
 )
 target_link_libraries(scan_point_analyser_test
+  imgui
+  glew
+  glfw 
+  ${OPENGL_gl_LIBRARY} 
+  ${PROJECT_NAME}_lib
+)
+
+add_executable(grid_pcm_test
+  test/grid_pcm_test.cpp
+)
+target_include_directories(grid_pcm_test PUBLIC
+  include
+  src
+)
+target_link_libraries(grid_pcm_test
   imgui
   glew
   glfw 

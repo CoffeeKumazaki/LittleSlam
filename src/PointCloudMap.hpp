@@ -8,13 +8,13 @@ public:
     return instance;
   }
 
-private:
+protected:
   PointCloudMap();
   ~PointCloudMap();
 
 public:
   void addPose(Pose2D pose);
-  void addPoints(const std::vector<LPoint2D> &points, int step = 5);
+  virtual void addPoints(const std::vector<LPoint2D> &points, int step = 5);
   Pose2D getLastPose();
   void setLastScan(const Scan2D &scan) { lastScan = scan; }
 

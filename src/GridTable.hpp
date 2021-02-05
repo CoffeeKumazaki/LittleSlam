@@ -1,0 +1,83 @@
+#pragma once
+
+struct GridCell {
+  std::vector<LPoint2D> lps;
+};
+
+class GridTable {
+
+public:
+  GridTable()
+    : csize(0.05)
+    , rsize(40) 
+  {
+    clear();
+  }
+  ~GridTable() {}
+
+  void clear() {
+    table.clear();
+    tsize = static_cast<int>(rsize/csize);
+    size_t w = static_cast<int>(2*tsize+1);
+    table.resize(w*w);
+  }
+
+  void addPoint(const LPoint2D& p) {
+    int xi = static_cast<int>(p.x/csize) + tsize;
+    if (xi < 0 || xi > 2*tsize) {
+      return;
+    }
+
+    int yi = static_cast<int>(p.y/csize) + tsize;
+    if (yi < 0 || yi > 2*tsize) {
+      return;
+    }
+
+    size_t idx = static_cast<size_t>(yi*(2*tsize + 1) + xi);
+    table[idx].lps.emplace_back(p);
+  }
+
+  void makeCellPoints(int nthre, std::vector<LPoint2D>& res) {
+
+    for(size_t i = 0; i < table.size(); i++) {
+      // std::cout << "xx " << table[i].lps.size() << std::endl;
+      if (table[i].lps.size() < nthre) continue;
+
+      double x = 0;
+      double nx = 0;
+      double y = 0;
+      double ny = 0;
+      int sid = 0;
+      for(size_t j = 0; j < table[i].lps.size(); j++) {
+        const auto lp = table[i].lps[j];
+        x += lp.x;
+        y += lp.y;
+        nx += lp.nx;
+        ny += lp.ny;
+        sid = std::max(sid, lp.sid);
+      }
+
+      x /= table[i].lps.size();
+      y /= table[i].lps.size();
+      double L = sqrt(nx*nx + ny*ny);
+      nx /= L;
+      ny /= L;
+      
+      LPoint2D newp;
+      newp.x = x;
+      newp.y = y;
+      newp.sid = sid;
+      newp.nx = nx;
+      newp.ny = ny;
+      newp.type = LINE;
+      res.emplace_back(newp);
+    }
+  }
+
+private:
+  double csize;
+  double rsize;
+  int tsize;
+  std::vector<GridCell> table;
+
+};
