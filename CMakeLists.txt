@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME}_lib
   src/PointCloudMap.cpp
   src/ScanMatcher.cpp
   src/SensorDataReader.cpp
+  src/ScanPointAnalyser.cpp
   src/SlamLauncher.cpp
 )
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
@@ -84,6 +85,21 @@ target_include_directories(data_associator_test PUBLIC
   src
 )
 target_link_libraries(data_associator_test
+  imgui
+  glew
+  glfw 
+  ${OPENGL_gl_LIBRARY} 
+  ${PROJECT_NAME}_lib
+)
+
+add_executable(scan_point_analyser_test
+  test/scan_point_analyser.cpp
+)
+target_include_directories(scan_point_analyser_test PUBLIC
+  include
+  src
+)
+target_link_libraries(scan_point_analyser_test
   imgui
   glew
   glfw 

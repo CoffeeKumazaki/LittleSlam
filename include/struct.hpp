@@ -9,6 +9,11 @@ enum ptype
   ISOLATE,
 };
 
+struct Vector2D {
+  double x = 0.0;
+  double y = 0.0;
+};
+
 struct LPoint2D {
 
   int sid = -1;
