@@ -8,7 +8,7 @@ class GridTable {
 
 public:
   GridTable()
-    : csize(0.05)
+    : csize(0.5)
     , rsize(40) 
   {
     clear();
@@ -22,19 +22,20 @@ public:
     table.resize(w*w);
   }
 
-  void addPoint(const LPoint2D& p) {
-    int xi = static_cast<int>(p.x/csize) + tsize;
+  bool addPoint(const LPoint2D& p) {
+    int xi = static_cast<int>((p.x + rsize)/csize);
     if (xi < 0 || xi > 2*tsize) {
-      return;
+      return false;
     }
 
-    int yi = static_cast<int>(p.y/csize) + tsize;
+    int yi = static_cast<int>((p.y + rsize)/csize);
     if (yi < 0 || yi > 2*tsize) {
-      return;
+      return false;
     }
 
     size_t idx = static_cast<size_t>(yi*(2*tsize + 1) + xi);
     table[idx].lps.emplace_back(p);
+    return true;
   }
 
   void makeCellPoints(int nthre, std::vector<LPoint2D>& res) {
@@ -74,7 +75,7 @@ public:
     }
   }
 
-private:
+public:
   double csize;
   double rsize;
   int tsize;

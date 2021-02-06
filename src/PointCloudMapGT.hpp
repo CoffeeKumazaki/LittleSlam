@@ -21,7 +21,7 @@ public:
 private:
   void makeSubsamplePoints(std::vector<LPoint2D>& lps);
 
-private:
+public:
   std::vector<LPoint2D> allLps;
   GridTable gt;
 

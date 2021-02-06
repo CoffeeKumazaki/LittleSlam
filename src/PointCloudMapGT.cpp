@@ -30,8 +30,9 @@ void PointCloudMapGT::makeGlobalMap() {
 
 void PointCloudMapGT::makeSubsamplePoints(std::vector<LPoint2D>& lps) {
   gt.clear();
+  int c = 0;
   for (size_t i = 0; i < allLps.size(); i++) {
-    gt.addPoint(allLps[i]);
+    if (gt.addPoint(allLps[i])) c++;
   }
 
   gt.makeCellPoints(1, globalMap);

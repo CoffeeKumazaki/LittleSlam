@@ -41,7 +41,7 @@ int main(int argc, char const *argv[]) {
 		if (next) {
 			dataLoad = sReader.loadData(cnt, scan);
       GetPCMGT().clear();
-      GetPCMGT().addPoints(scan.lps);
+      GetPCMGT().addPoints(scan.lps, 1);
       GetPCMGT().makeGlobalMap();
 		}
 		if (dataLoad)	{
@@ -62,6 +62,38 @@ int main(int argc, char const *argv[]) {
 		ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_FirstUseEver);
 
 		ImGui::Begin("Data Resampling", nullptr, window_flags);
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+
+    // draw grid.
+    double rsize = 40;
+    double csize = 0.5;
+    int tsize = static_cast<int>(rsize/csize);
+    int w = static_cast<int>(2*tsize+1);
+    for (int c = -w; c < w; c++) {
+      double x = c * csize;
+      double y = -rsize;
+      draw_list->AddLine(
+        ImVec2(x*80 + ImGui::GetWindowWidth() / 2.0,  -y*80 + ImGui::GetWindowHeight() / 2.0),
+        ImVec2(x*80 + ImGui::GetWindowWidth() / 2.0,  y*80 + ImGui::GetWindowHeight() / 2.0),
+        ImColor(
+          ImVec4(0.7f, 0.7f, 0.7f, 1.00f)
+        ), 
+        0.5
+      );
+    }
+    for (int r = -w; r < w; r++) {
+      double x = -rsize;
+      double y = r * csize;
+      draw_list->AddLine(
+        ImVec2(-x*80 + ImGui::GetWindowWidth() / 2.0,  y*80 + ImGui::GetWindowHeight() / 2.0),
+        ImVec2(x*80 + ImGui::GetWindowWidth() / 2.0, y*80 + ImGui::GetWindowHeight() / 2.0),
+        ImColor(
+          ImVec4(0.7f, 0.7f, 0.7f, 1.00f)
+        ), 
+        0.5
+      );
+    }
+
 		std::string frame_title = data_file + "  id: " + std::to_string(cnt);
 		ImGui::Text("%s", frame_title.c_str());
 
@@ -72,9 +104,6 @@ int main(int argc, char const *argv[]) {
     if (ImGui::Button("Continuous")) {
       read_contenious = !read_contenious;
     }
-
-    ImDrawList *draw_list = ImGui::GetWindowDrawList();
-
 
 		std::vector<LPoint2D> resampled;
     static bool showOrg = false;
@@ -94,13 +123,36 @@ int main(int argc, char const *argv[]) {
 				);
 			}
 		}
+
+    ImColor grid_colors[2] = {
+      ImColor(
+        ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+      ),
+      ImColor(
+        ImVec4(1.0f, 1.0f, 0.0f, 1.00f)
+      )
+    };
+
+		for (size_t i = 0; i < GetPCMGT().gt.table.size(); i++) {
+      const auto grid = GetPCMGT().gt.table[i];
+      for (size_t j=0; j < grid.lps.size(); j++) {
+        const auto lp = grid.lps[j];
+        draw_list->AddCircle(
+            ImVec2(
+                lp.x * 80 + ImGui::GetWindowWidth() / 2.0,
+                lp.y * 80 + ImGui::GetWindowHeight() / 2.0),
+            2,
+            grid_colors[i%2]
+          );
+      }
+		}
 		for (size_t i = 0; i < GetPCMGT().globalMap.size(); i++) {
       const auto map = GetPCMGT().globalMap[i];
 			draw_list->AddCircle(
 					ImVec2(
 							map.x * 80 + ImGui::GetWindowWidth() / 2.0,
 							map.y * 80 + ImGui::GetWindowHeight() / 2.0),
-					2,
+					4,
 					ImColor(
 							ImVec4(0.0f, 0.0f, 1.0f, 1.00f)));
 		}
