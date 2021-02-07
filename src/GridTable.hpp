@@ -41,7 +41,6 @@ public:
   void makeCellPoints(int nthre, std::vector<LPoint2D>& res) {
 
     for(size_t i = 0; i < table.size(); i++) {
-      // std::cout << "xx " << table[i].lps.size() << std::endl;
       if (table[i].lps.size() < nthre) continue;
 
       double x = 0;

@@ -32,7 +32,6 @@ void ScanPointResampler::resamplePoints(const std::vector<LPoint2D>& org, std::v
     {
       dist += d;
       prev = org[i];
-      std::cout << i << std::endl;
       continue;
     }
     else if (d+dist < interval_max) {

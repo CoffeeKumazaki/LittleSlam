@@ -69,7 +69,6 @@ public:
 
       ev = evaluate(x, y, a);
 
-      // std::cout << abs(prevEv-ev) << ", " <<  evthre << std::endl;
       if (ev < evMin)
       {
         evMin = ev;
