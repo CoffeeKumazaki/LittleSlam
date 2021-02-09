@@ -30,6 +30,7 @@ add_library(imgui STATIC
 ## Define libraries
 add_library(${PROJECT_NAME}_lib
   src/struct.cpp
+  src/GridTable.cpp
   src/ScanPointResampler.cpp
   src/DataAssociator.cpp
   src/PoseEstimator.cpp
