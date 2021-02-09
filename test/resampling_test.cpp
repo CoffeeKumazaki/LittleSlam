@@ -98,7 +98,7 @@ int main(int argc, char const *argv[]) {
 					ImVec2(
 							resampled[i].x * 80 + ImGui::GetWindowWidth() / 2.0,
 							resampled[i].y * 80 + ImGui::GetWindowHeight() / 2.0),
-					2,
+					3,
 					ImColor(
 							ImVec4(0.0f, 0.0f, 1.0f, 1.00f)));
 		}
