@@ -32,6 +32,7 @@ add_library(${PROJECT_NAME}_lib
   src/struct.cpp
   src/GridTable.cpp
   src/ScanPointResampler.cpp
+  src/DataAssociatorGT.cpp
   src/DataAssociator.cpp
   src/PoseEstimator.cpp
   src/RefScanMaker.cpp
