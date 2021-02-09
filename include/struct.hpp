@@ -26,7 +26,7 @@ struct LPoint2D {
   ptype type = UNKNOWN;
 
   LPoint2D() {
-    LPoint2D(01, 0, 0);
+    LPoint2D(-1, 0, 0);
   }
   LPoint2D(int _sid, double _x, double _y) {
     sid = _sid; x = _x;

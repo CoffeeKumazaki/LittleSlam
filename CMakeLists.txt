@@ -122,3 +122,14 @@ target_link_libraries(grid_pcm_test
   ${OPENGL_gl_LIBRARY} 
   ${PROJECT_NAME}_lib
 )
+
+add_executable(pose_optimizer_test
+  test/pose_optimizer_test.cpp
+)
+target_include_directories(pose_optimizer_test PUBLIC
+  include
+  src
+)
+target_link_libraries(grid_pcm_test
+  ${PROJECT_NAME}_lib
+)

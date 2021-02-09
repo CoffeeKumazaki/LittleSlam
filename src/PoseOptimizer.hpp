@@ -3,7 +3,7 @@
 class PoseOptimizer {
 
 public:
-  PoseOptimizer(): evthre(0.001), dd(0.00001), da(0.00001){};
+  PoseOptimizer(): evthre(0.00001), dd(0.00001), da(0.00001){};
   ~PoseOptimizer(){};
 
   void setPoints(const std::vector<LPoint2D>& _curLps, const std::vector<LPoint2D>& _refLps) {
@@ -24,7 +24,7 @@ public:
       const auto ref = refLps[i];
 
       double sx = cos(a) * cur.x - sin(a) * cur.y + x;
-      double sy = sin(a) * cur.x + sin(a) * cur.y + y;
+      double sy = sin(a) * cur.x + cos(a) * cur.y + y;
 
       double dist = (sx - ref.x) * (sx - ref.x) + (sy - ref.y) * (sy - ref.y);
 
@@ -42,9 +42,9 @@ public:
 
   double OptimizePose(const Pose2D& initPose, Pose2D& estPose) {
 
-    double x = initPose.x;
-    double y = initPose.y;
-    double a = initPose.angle;
+    double x = 0; // initPose.x;
+    double y = 0; // initPose.y;
+    double a = 0; // initPose.angle;
     double xmin = x;
     double ymin = y;
     double amin = a;
@@ -52,9 +52,10 @@ public:
     double evMin = __DBL_MAX__;
     double prevEv = evMin;
 
-    double ev = evaluate(initPose.x, initPose.y, initPose.angle);
+    double ev = evaluate(x, y, a);
 
     double step=0.00001;
+    int i = 0;
     while (abs(prevEv-ev) > evthre) {
       prevEv = ev;
 
@@ -66,7 +67,6 @@ public:
       double dy = -step*dEy;
       double da = -step*dEa;
       x += dx;  y += dy;  a += da;
-
       ev = evaluate(x, y, a);
 
       if (ev < evMin)
@@ -74,11 +74,12 @@ public:
         evMin = ev;
         xmin = x;  ymin = y;  amin = a;
       }
+      i++;
     }
 
-    estPose.x = xmin;
-    estPose.y = ymin;
-    estPose.angle = amin;
+    estPose.x = initPose.x + xmin;
+    estPose.y = initPose.y + ymin;
+    estPose.angle = initPose.angle + amin;
     // estPose.calcRmat();
 
     return evMin;
