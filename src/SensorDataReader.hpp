@@ -17,5 +17,5 @@ private:
 private:
   std::ifstream f;
 
-  double angleOffset = 0.0;
+  double angleOffset = 180;
 };

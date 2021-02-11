@@ -48,7 +48,7 @@ struct Pose2D {
   double Rmat[2][2] = {{0, 0}, {0, 0}};
 
   void calcRmat() {
-    double a = DEG2RAD(angle)+M_PI;
+    double a = DEG2RAD(angle);
     Rmat[0][0] = Rmat[1][1] = cos(a);
     Rmat[1][0] = sin(a);
     Rmat[0][1] = -Rmat[1][0];
@@ -63,8 +63,8 @@ struct Pose2D {
     
     double dx = trg.x - src.x;
     double dy = trg.y - src.y;
-    res.x = trg.Rmat[0][0] * dx + trg.Rmat[0][1] * dy;
-    res.y = trg.Rmat[1][0] * dx + trg.Rmat[1][1] * dy;
+    res.x = src.Rmat[0][0] * dx + src.Rmat[1][0] * dy;
+    res.y = src.Rmat[0][1] * dx + src.Rmat[1][1] * dy;
 
     res.angle = trg.angle - src.angle;
     if (res.angle < -180)

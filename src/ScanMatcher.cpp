@@ -21,7 +21,7 @@ bool ScanMatcher::matchScan(const Scan2D& srcScan) {
   cnt++;
   if (cnt == 0)
   {
-    growMap(srcScan, curPose);
+    growMap(srcScan, srcScan.pose);
     prevScan = srcScan;
     return true;
   }
