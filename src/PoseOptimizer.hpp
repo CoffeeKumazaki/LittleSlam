@@ -3,6 +3,12 @@
 class PoseOptimizer {
 
 public:
+
+  enum DIST_TYPE {
+    EUCLIDEAN = 0,
+    VERTICAL,
+  };
+
   PoseOptimizer(): evthre(0.00001), dd(0.00001), da(0.00001){};
   ~PoseOptimizer(){};
 
@@ -11,7 +17,7 @@ public:
     refLps.assign(_refLps.begin(), _refLps.end());
   }
 
-  double evaluate(double x, double y, double angle) {
+  double evaluate(double x, double y, double angle, DIST_TYPE type = VERTICAL) {
 
     double evLimit = 0.2;
     double a = DEG2RAD(angle);
@@ -26,7 +32,14 @@ public:
       double sx = cos(a) * cur.x - sin(a) * cur.y + x;
       double sy = sin(a) * cur.x + cos(a) * cur.y + y;
 
-      double dist = (sx - ref.x) * (sx - ref.x) + (sy - ref.y) * (sy - ref.y);
+      double dist = 0;
+      if (type == EUCLIDEAN) {
+        dist = (sx - ref.x) * (sx - ref.x) + (sy - ref.y) * (sy - ref.y);
+      }
+      else if (type == VERTICAL) {
+        dist = (sx-ref.x)*ref.nx + (sy-ref.y)*ref.ny;
+        dist *= dist;
+      }
 
       if (dist < evLimit*evLimit) {
         cnt++;
@@ -68,7 +81,6 @@ public:
       double da = -step*dEa;
       x += dx;  y += dy;  a += da;
       ev = evaluate(x, y, a);
-
       if (ev < evMin)
       {
         evMin = ev;
@@ -81,6 +93,8 @@ public:
     estPose.y = initPose.y + ymin;
     estPose.angle = initPose.angle + amin;
     // estPose.calcRmat();
+    std::cout << "OptimizePose init : " << initPose.x << ", " << initPose.y << ", " << initPose.angle << std::endl;
+    std::cout << "OptimizePose est  : " << estPose.x << ", " << estPose.y << ", " << estPose.angle << std::endl;
 
     return evMin;
   }
